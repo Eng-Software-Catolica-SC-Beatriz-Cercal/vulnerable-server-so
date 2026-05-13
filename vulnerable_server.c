@@ -31,3 +31,33 @@ void url_decode(char *src, char *dest) {
 
             if (b >= 'A')
                 b = b - 'A' + 10;
+             else
+                b -= '0';
+
+            *dest++ = 16 * a + b;
+            src += 3;
+
+        } else if (*src == '+') {
+
+            *dest++ = ' ';
+            src++;
+
+        } else {
+
+            *dest++ = *src++;
+        }
+    }
+
+    *dest = '\0';
+}
+
+void handle_client(int client_socket) {
+
+    char buffer[BUFFER_SIZE] = {0};
+    char command[1024] = {0};
+    char decoded[1024] = {0};
+
+    ssize_t bytes_read = read(
+        client_socket,
+        buffer,
+        sizeof(buffer) - 1
