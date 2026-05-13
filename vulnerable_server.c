@@ -183,3 +183,51 @@ int main() {
     );
 
     address.sin_family = AF_INET;
+ address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    address.sin_port = htons(PORT);
+
+    if (
+        bind(
+            server_fd,
+            (struct sockaddr *)&address,
+            sizeof(address)
+        ) < 0
+    ) {
+
+        perror("Erro no bind");
+        close(server_fd);
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_fd, 10) < 0) {
+
+        perror("Erro no listen");
+        close(server_fd);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("=====================================\n");
+    printf("Servidor vulnerável rodando\n");
+    printf("URL: http://127.0.0.1:%d\n", PORT);
+    printf("=====================================\n");
+
+    while (1) {  client_socket = accept(
+            server_fd,
+            (struct sockaddr *)&address,
+            &addrlen
+        );
+
+        if (client_socket < 0) {
+
+            perror("Erro no accept");
+            continue;
+        }
+
+        handle_client(client_socket);
+    }
+
+    close(server_fd);
+
+    return 0;
+}
